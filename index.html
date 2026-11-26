@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ミニ決済ごっこ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5FB; --surface:#FFFFFF; --ink:#101B45; --muted:#56618A; --line:#D9DFF2; --edge:#101B45;
+  --brand:#2645E8; --on-brand:#FFFFFF; --lemon:#FFE14D; --on-lemon:#101B45; --code:#101B45; --code-ink:#E9ECFF; --ng:#B3261E;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0D1230;--surface:#171F4B;--ink:#F0F2FF;--muted:#A9B1D8;--line:#2B3568;--edge:#B9C3FF;--brand:#7C90FF;--on-brand:#0D1230;--code:#090D24;--ng:#FF8A80}
+}
+:root[data-theme="dark"]{--bg:#0D1230;--surface:#171F4B;--ink:#F0F2FF;--muted:#A9B1D8;--line:#2B3568;--edge:#B9C3FF;--brand:#7C90FF;--on-brand:#0D1230;--code:#090D24;--ng:#FF8A80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Zen Maru Gothic','Hiragino Maru Gothic ProN','Hiragino Sans','Yu Gothic UI','Meiryo',sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:520px;margin:0 auto;padding:14px 16px 48px}
+button{font:inherit;color:inherit}
+.top{display:flex;align-items:center;justify-content:space-between;padding:2px 0 6px}
+.brand{font-weight:900;font-size:20px}
+.pill{background:var(--lemon);color:var(--on-lemon);border:2px solid var(--edge);border-radius:999px;padding:1px 12px;font-weight:700;font-size:13px}
+h1{font-size:clamp(24px,7vw,30px);font-weight:900;line-height:1.3;margin:10px 0 6px}
+h1.ng{color:var(--ng)}
+.sec{font-size:16px;font-weight:900;margin:22px 0 8px}
+.sub,.help{color:var(--muted);font-size:14px;margin:0 0 10px}
+.back{background:none;border:none;padding:6px 0;font-weight:700;color:var(--muted);cursor:pointer;font-size:15px}
+.wallet{background:var(--brand);color:var(--on-brand);border:2px solid var(--edge);border-radius:22px;box-shadow:4px 4px 0 var(--edge);padding:16px 18px;margin:8px 0 4px}
+.wl{font-weight:700;font-size:14px;opacity:.9}
+.bal{font-size:40px;font-weight:900;line-height:1.2;font-variant-numeric:tabular-nums}
+.big{display:block;width:100%;text-align:left;margin:0 0 12px;padding:14px 16px;background:var(--surface);border:2px solid var(--edge);border-radius:18px;box-shadow:3px 3px 0 var(--edge);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.big.y{background:var(--lemon);color:var(--on-lemon)}
+.big:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
+.big b{display:block;font-size:17px}.big small{font-size:13px;opacity:.8}
+.cta{display:block;width:100%;margin-top:16px;border:2px solid var(--edge);background:var(--brand);color:var(--on-brand);border-radius:14px;padding:14px;font-weight:900;font-size:17px;box-shadow:3px 3px 0 var(--edge);cursor:pointer}
+.cta:disabled{background:var(--line);color:var(--muted);box-shadow:none;border-color:var(--line);cursor:not-allowed}
+.ghost{display:block;width:100%;margin-top:12px;background:none;border:2px solid var(--line);color:var(--muted);border-radius:12px;padding:10px;font-weight:700;cursor:pointer}
+.foot{display:flex;gap:10px;margin-top:8px}.foot .ghost{flex:1}
+button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+.field{margin-top:14px}.lbl{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
+input[type=text],input[type=number],textarea{width:100%;border:2px solid var(--edge);border-radius:12px;padding:11px 14px;font:inherit;font-size:16px;background:var(--surface);color:var(--ink)}
+textarea{resize:vertical}
+.warn{color:var(--ng);font-weight:700;font-size:14px;margin:8px 0 0}
+.chipnote{display:inline-block;background:var(--lemon);color:var(--on-lemon);border:2px solid var(--edge);border-radius:999px;padding:0 14px;font-weight:700}
+.qrbox{background:#fff;border:2px solid var(--edge);border-radius:18px;padding:8px;max-width:300px;margin:12px auto}
+.qr{display:block;width:100%;height:auto}
+.cprow{display:flex;gap:8px}.cprow input{flex:1;min-width:0;font-size:13px}
+.mini{flex:none;border:2px solid var(--edge);background:var(--surface);border-radius:12px;padding:0 14px;font-weight:700;cursor:pointer}
+.peek{border:2px solid var(--line);border-radius:14px;padding:8px 14px;margin:12px 0;background:var(--surface)}
+.peek summary{font-weight:700;cursor:pointer}
+.peek ul{margin:8px 0 2px;padding-left:20px;font-size:14px}
+.peek table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.peek th{text-align:left;color:var(--muted);font-weight:700;padding:2px 8px 2px 0;white-space:nowrap}
+.peek td{overflow-wrap:anywhere}
+pre.code{margin:8px 0 0;background:var(--code);color:var(--code-ink);border-radius:10px;padding:10px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-family:ui-monospace,Menlo,Consolas,monospace}
+.cam{position:relative;aspect-ratio:1/1;max-width:420px;margin:10px auto;border:2px solid var(--edge);border-radius:18px;overflow:hidden;background:#000}
+.cam video{width:100%;height:100%;object-fit:cover;display:block}
+.frame{position:absolute;inset:18%;border:3px solid var(--lemon);border-radius:14px;pointer-events:none}
+.ticket{background:var(--surface);border:2px solid var(--edge);border-radius:18px;box-shadow:3px 3px 0 var(--edge);padding:6px 16px;margin-top:10px}
+.ticket div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:2px dashed var(--line)}
+.ticket div:last-child{border-bottom:none}.ticket span{color:var(--muted)}.ticket b{text-align:right;overflow-wrap:anywhere}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:2px dashed var(--line);font-size:15px}
+.plus{color:#0E7A4F;font-weight:900}.minus{color:var(--ng);font-weight:900}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .plus{color:#6EE7B7}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+(function(){
+'use strict';
+var KEY='mini-pay-v1';
+function fresh(){return {name:'',bal:1000,used:[],issued:{},hist:[]};}
+function load(){try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&typeof o.bal==='number')return o;}}catch(x){}return fresh();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(W));}catch(x){}}
+var W=load();
+var S={view:'home',want:[],wantName:'',title:'',err:'',left:60,code:'',prev:'',confirm:false,forCode:'',cust:'',shop:'',qrText:'',req:null,rcp:'',got:null};
+var app=document.getElementById('app'),stream=null,raf=0,tick=0;
+var cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+
+function e(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function enc(s){return encodeURIComponent(String(s).slice(0,16));}
+function dec(s){try{return decodeURIComponent(s);}catch(x){return s;}}
+function rnd(n){var s='';while(s.length<n)s+=Math.floor(Math.random()*36).toString(36);return s;}
+function newCode(){return String(1000+Math.floor(Math.random()*9000));}
+function pt(n){return n.toLocaleString('ja-JP')+' pt';}
+function now(){var d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+function $(id){return document.getElementById(id);}
+
+var LAB={REQ:['種類','お店','品物','金額','取引ID','指定コード'],ID:['種類','名前','支払いコード'],RCP:['種類','取引ID','金額','お客さん']};
+var KIND={REQ:'請求QR',ID:'お客さんのQR',RCP:'レシート'};
+
+function qrSvg(t){
+  var bad='<p class="warn">QRを表示できませんでした。下のコードを使ってね。</p>';
+  if(typeof qrcode!=='function')return bad;
+  try{
+    var q=qrcode(0,'L');q.addData(t);q.make();
+    var n=q.getModuleCount(),d='',r,c;
+    for(r=0;r<n;r++)for(c=0;c<n;c++)if(q.isDark(r,c))d+='M'+(c+4)+' '+(r+4)+'h1v1h-1z';
+    return '<svg class="qr" viewBox="0 0 '+(n+8)+' '+(n+8)+'" role="img" aria-label="QRコード" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="'+d+'" fill="#101B45"/></svg>';
+  }catch(x){return bad;}
+}
+function peek(t){
+  var p=t.split('|'),L=LAB[p[0]]||[];
+  var rows=p.map(function(x,i){return '<tr><th>'+(L[i]||'')+'</th><td>'+e(dec(x)||'（なし）')+'</td></tr>';}).join('');
+  return '<details class="peek"><summary>QRの中身をのぞく</summary><pre class="code">'+e(t)+'</pre><table>'+rows+'</table><p class="help">QRコードの正体は、ただの文字です。</p></details>';
+}
+function qrBlock(t){
+  return '<div class="qrbox">'+qrSvg(t)+'</div>'+peek(t)
+    +'<label class="lbl" for="cp">コード（カメラが使えないとき用）</label><div class="cprow"><input id="cp" type="text" readonly value="'+e(t)+'"><button class="mini" data-a="copy">コピー</button></div>';
+}
+function head(){return '<header class="top"><div class="brand">ミニ決済</div><span class="pill">ごっこ</span></header>';}
+function back(){return '<button class="back" data-a="home">← ホームへ</button>';}
+function field(id,label,val,type,max){
+  return '<div class="field"><label class="lbl" for="'+id+'">'+label+'</label><input id="'+id+'" type="'+type+'" '
+    +(type==='number'?'inputmode="numeric" min="1" max="9999"':'maxlength="'+max+'"')+' value="'+val+'" autocomplete="off"></div>';
+}
+
+/* ---- views ---- */
+function vHome(){
+  if(!W.name)return head()+'<h1>はじめに、<br>名前をつけよう</h1><p class="sub">お財布に 1,000 pt が入っているよ。</p>'
+    +'<input id="nm" type="text" maxlength="8" placeholder="例：ゆうと" autocomplete="off"><p class="warn" id="msg"></p><button class="cta" data-a="setname">はじめる</button>';
+  return head()+'<div class="wallet"><div class="wl">'+e(W.name)+' さんのお財布</div><div class="bal">'+pt(W.bal)+'</div></div>'
+    +'<h2 class="sec">お客さんとして</h2>'
+    +'<button class="big" data-a="scanreq"><b>QRを読み取って支払う</b><small>お店が出したQRを読み取る</small></button>'
+    +'<button class="big" data-a="myid"><b>自分のQRを見せて支払う</b><small>お店に読み取ってもらう</small></button>'
+    +'<h2 class="sec">お店として</h2>'
+    +'<button class="big y" data-a="shopform"><b>QRを出して請求する</b><small>金額を決めて、QRを作る</small></button>'
+    +'<button class="big y" data-a="scanid"><b>お客さんのQRを読み取る</b><small>読み取ってから金額を決める</small></button>'
+    +'<details class="peek"><summary>しくみメモ</summary><ul>'
+    +'<li>QRコードは「文字を絵にしたもの」</li>'
+    +'<li>取引IDがあるから、同じQRは2回使えない</li>'
+    +'<li>自分のQRの支払いコードは60秒で変わる</li>'
+    +'<li>本物のアプリは、サーバーが全員の残高を管理している。このアプリは、この端末の中だけで動いているよ</li></ul></details>'
+    +'<div class="foot"><button class="ghost" data-a="hist">履歴</button><button class="ghost" data-a="reset">'+(S.confirm?'本当にリセット？':'リセット')+'</button></div>';
+}
+function vShopForm(){
+  var f=S.forCode?'<p><span class="chipnote">'+e(S.cust)+' さんへの請求</span></p>':'';
+  return head()+back()+'<h1>請求QRを作る</h1>'+f
+    +field('shop','お店の名前',e(S.shop||W.name+'のお店'),'text',14)+field('item','品物','ドリンク','text',10)+field('amt','金額（pt）','300','number',4)
+    +'<p class="warn" id="msg"></p><button class="cta" data-a="mkreq">QRを作る</button>';
+}
+function vQr(){
+  return head()+back()+'<h1>お客さんに見せてね</h1><p class="sub">お客さんが読み取って支払うと、レシートが出ます。</p>'+qrBlock(S.qrText)
+    +'<button class="cta" data-a="scanrcp">レシートを読み取る</button>';
+}
+function vIdQr(){
+  return head()+back()+'<h1>自分のQR</h1><p class="sub">お店に読み取ってもらってね。<span id="left">'+S.left+'</span>秒ごとに新しくなるよ。</p>'
+    +qrBlock('ID|'+enc(W.name)+'|'+S.code)+'<button class="cta" data-a="scanreq">お店の請求QRを読み取る</button>';
+}
+function vScan(){
+  return head()+back()+'<h1>'+e(S.title)+'</h1><div class="cam"><video id="vid" muted playsinline></video><div class="frame"></div></div>'
+    +'<p class="help" id="cam">カメラを準備中…</p>'
+    +'<label class="lbl" for="pb">カメラが使えないとき：コードを貼り付け</label><textarea id="pb" rows="2" placeholder="REQ|…"></textarea>'
+    +'<button class="ghost" data-a="paste">このコードを読み込む</button>';
+}
+function vConfirm(){
+  var r=S.req,after=W.bal-r.amt,ok=after>=0;
+  return head()+'<h1>支払いの確認</h1><div class="ticket"><div><span>お店</span><b>'+e(r.shop)+'</b></div><div><span>品物</span><b>'+e(r.item)+'</b></div>'
+    +'<div><span>金額</span><b>'+pt(r.amt)+'</b></div><div><span>支払い後の残高</span><b>'+(ok?pt(after):'足りません')+'</b></div></div>'
+    +(ok?'':'<p class="warn">残高が足りないよ。</p>')
+    +'<button class="cta" data-a="pay"'+(ok?'':' disabled')+'>支払う</button><button class="ghost" data-a="home">やめる</button>';
+}
+function vDone(){
+  return head()+'<h1>支払い完了！</h1><p class="sub">残高：'+pt(W.bal)+'。このレシートをお店に見せてね。</p>'+qrBlock(S.rcp)
+    +'<p class="help">お店が読み取ると取引が完了します。同じレシートは1回しか使えません。</p><button class="ghost" data-a="home">ホームへ</button>';
+}
+function vGot(){
+  return head()+'<h1>入金できた！</h1><div class="wallet"><div class="wl">'+e(S.got.w)+' さんから</div><div class="bal">+'+pt(S.got.a)+'</div></div>'
+    +'<p class="sub">残高：'+pt(W.bal)+'</p><button class="cta" data-a="home">ホームへ</button>';
+}
+function vFail(){
+  return head()+'<h1 class="ng">うまくいかなかった</h1><p>'+e(S.err)+'</p>'
+    +'<button class="cta" data-a="retry">もう一度読み取る</button><button class="ghost" data-a="home">ホームへ</button>';
+}
+function vHist(){
+  var li=W.hist.slice(0,15).map(function(h){
+    return '<li><span>'+e(h.t)+'　'+e(h.w)+'（'+e(h.i)+'）</span><span class="'+(h.k==='in'?'plus':'minus')+'">'+(h.k==='in'?'+':'−')+pt(h.a)+'</span></li>';
+  }).join('');
+  return head()+back()+'<h1>履歴</h1>'+(li?'<ul class="hist">'+li+'</ul>':'<p class="sub">まだ取引はありません。</p>');
+}
+var VIEWS={home:vHome,shopform:vShopForm,qr:vQr,idqr:vIdQr,scan:vScan,confirm:vConfirm,done:vDone,got:vGot,fail:vFail,hist:vHist};
+function draw(){app.innerHTML=VIEWS[S.view]();}
+function go(v){stopScan();clearInterval(tick);S.view=v;draw();window.scrollTo(0,0);if(v==='scan')startScan();if(v==='idqr')startId();}
+function toScan(want,wantName,title){S.want=want;S.wantName=wantName;S.title=title;go('scan');}
+function fail(m){S.err=m;go('fail');}
+
+/* ---- camera ---- */
+function stopScan(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(function(t){t.stop();});stream=null;}}
+function camMsg(m){var el=$('cam');if(el)el.textContent=m;}
+function startScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||typeof jsQR!=='function'){camMsg('このブラウザではカメラ読み取りが使えません。下にコードを貼り付けてね。');return;}
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(st){
+    var v=$('vid');
+    if(!v||S.view!=='scan'){st.getTracks().forEach(function(t){t.stop();});return;}
+    stream=st;v.srcObject=st;v.setAttribute('playsinline','');v.play();camMsg('QRコードを枠に入れてね');loop();
+  }).catch(function(){camMsg('カメラを使えませんでした。下にコードを貼り付けてね。');});
+}
+function loop(){
+  var v=$('vid');if(!v||!stream)return;
+  if(v.readyState>=2&&v.videoWidth){
+    var sc=Math.min(1,480/v.videoWidth),w=Math.round(v.videoWidth*sc),h=Math.round(v.videoHeight*sc);
+    cv.width=w;cv.height=h;cx.drawImage(v,0,0,w,h);
+    var c=jsQR(cx.getImageData(0,0,w,h).data,w,h);
+    if(c&&c.data){stopScan();route(c.data);return;}
+  }
+  raf=requestAnimationFrame(loop);
+}
+function startId(){
+  if(!S.code)S.code=newCode();
+  S.left=60;
+  tick=setInterval(function(){
+    S.left--;
+    if(S.left<=0){S.prev=S.code;S.code=newCode();S.left=60;draw();}
+    var el=$('left');if(el)el.textContent=S.left;
+  },1000);
+}
+
+/* ---- logic ---- */
+function route(t){
+  var p=t.trim().split('|').map(dec),ty=p[0];
+  if(S.want.indexOf(ty)<0)return fail(KIND[ty]?('これは「'+KIND[ty]+'」だよ。ここでは「'+S.wantName+'」を読み取ってね。'):'このQRは、このアプリのものではないみたい。');
+  if(ty==='REQ'){
+    var n=p[4],amt=parseInt(p[3],10);
+    if(!n||!(amt>0))return fail('QRの中身がこわれています。');
+    if(W.used.indexOf(n)>=0)return fail('このQRは使用済みです。同じ取引は2回できません。');
+    if(p[5]&&p[5]!==S.code&&p[5]!==S.prev)return fail('このQRは、別の人あて、または期限切れです。');
+    S.req={shop:p[1],item:p[2],amt:amt,n:n};return go('confirm');
+  }
+  if(ty==='ID'){S.cust=p[1];S.forCode=p[2];return go('shopform');}
+  if(ty==='RCP'){
+    var i=W.issued[p[1]],a=parseInt(p[2],10);
+    if(!i)return fail('このお店が出した請求のレシートではありません。');
+    if(i.paid)return fail('このレシートは受け取り済みです。2回は入金できません。');
+    if(i.amt!==a)return fail('金額が合いません。');
+    i.paid=true;W.bal+=a;W.hist.unshift({k:'in',a:a,w:p[3],i:i.item,t:now()});save();
+    S.got={a:a,w:p[3]};return go('got');
+  }
+}
+
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest('[data-a]');if(!t)return;
+  var a=t.dataset.a,el;
+  if(a==='home'){S.confirm=false;go('home');}
+  else if(a==='setname'){var nm=$('nm').value.trim();if(!nm){$('msg').textContent='名前を入れてね。';return;}W.name=nm.slice(0,8);save();draw();}
+  else if(a==='scanreq'){toScan(['REQ'],'請求QR','お店のQRを読み取る');}
+  else if(a==='myid'){go('idqr');}
+  else if(a==='shopform'){S.forCode='';S.cust='';go('shopform');}
+  else if(a==='scanid'){toScan(['ID'],'お客さんのQR','お客さんのQRを読み取る');}
+  else if(a==='scanrcp'){toScan(['RCP'],'レシート','レシートを読み取る');}
+  else if(a==='mkreq'){
+    var shop=$('shop').value.trim()||W.name+'のお店',item=$('item').value.trim()||'ドリンク',amt=parseInt($('amt').value,10);
+    if(!(amt>0)||amt>9999){$('msg').textContent='金額は 1〜9999 で入れてね。';return;}
+    var n=rnd(5);W.issued[n]={amt:amt,item:item,paid:false};save();S.shop=shop;
+    S.qrText='REQ|'+enc(shop)+'|'+enc(item)+'|'+amt+'|'+n+'|'+(S.forCode||'');S.forCode='';S.cust='';go('qr');
+  }
+  else if(a==='pay'){
+    var r=S.req;if(W.bal<r.amt)return;
+    W.bal-=r.amt;W.used.push(r.n);W.hist.unshift({k:'out',a:r.amt,w:r.shop,i:r.item,t:now()});save();
+    S.rcp='RCP|'+r.n+'|'+r.amt+'|'+enc(W.name);go('done');
+  }
+  else if(a==='paste'){var v=$('pb').value;if(v.trim())route(v);}
+  else if(a==='retry'){go('scan');}
+  else if(a==='hist'){go('hist');}
+  else if(a==='reset'){
+    if(S.confirm){try{localStorage.removeItem(KEY);}catch(x){}W=fresh();S.confirm=false;S.code='';S.prev='';}else{S.confirm=true;}
+    draw();
+  }
+  else if(a==='copy'){
+    el=$('cp');
+    try{navigator.clipboard.writeText(el.value);}catch(x){el.select();try{document.execCommand('copy');}catch(y){}}
+    t.textContent='コピーした';
+  }
+});
+draw();
+})();
+</script>
+</body>
+</html>
